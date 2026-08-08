@@ -1,0 +1,170 @@
+.training-page {
+  display: grid;
+  grid-template-columns: 1fr 380px;
+  gap: 24px;
+  align-items: start;
+}
+
+@media (max-width: 900px) {
+  .training-page {
+    grid-template-columns: 1fr;
+  }
+}
+
+.training-left {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.training-right {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.training-right h3 {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 8px;
+}
+
+.tp-hint {
+  font-size: 13px;
+  color: var(--text-dim);
+  margin-bottom: 12px;
+}
+
+.tp-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.tp-label {
+  font-size: 13px;
+  color: var(--text-dim);
+  white-space: nowrap;
+}
+
+.tp-input {
+  flex: 1;
+  background: var(--surface2);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  color: var(--text);
+  font-size: 14px;
+  padding: 8px 12px;
+  outline: none;
+  min-width: 0;
+}
+
+.tp-input:focus { border-color: var(--accent); }
+
+.tp-input-sm {
+  flex: none;
+  width: 80px;
+}
+
+.tp-status {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--accent-light);
+}
+
+.tp-badge {
+  margin-top: 8px;
+  font-size: 12px;
+}
+
+.ws-ok  { color: var(--green); }
+.ws-off { color: var(--text-dim); }
+
+.tp-counts-meta {
+  font-size: 12px;
+  color: var(--text-dim);
+  margin-bottom: 10px;
+}
+
+.tp-counts {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  max-height: 240px;
+  overflow-y: auto;
+}
+
+.tp-count-row {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 6px 10px;
+  background: var(--surface2);
+  border-radius: 8px;
+}
+
+.tp-sign-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 16px;
+}
+
+.tp-sign-count {
+  font-size: 13px;
+  color: var(--text-dim);
+}
+
+.tp-del {
+  padding: 2px 8px;
+  font-size: 12px;
+}
+
+.capture-progress {
+  position: relative;
+  height: 32px;
+  background: var(--surface2);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+  font-weight: 500;
+}
+
+.capture-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--accent);
+  opacity: 0.35;
+  transition: width 0.2s;
+}
+
+.tp-train-progress {
+  margin-top: 12px;
+  position: relative;
+  height: 28px;
+  background: var(--surface2);
+  border-radius: 8px;
+  overflow: hidden;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 13px;
+}
+
+.tp-train-bar {
+  position: absolute;
+  left: 0; top: 0; bottom: 0;
+  background: var(--accent);
+  opacity: 0.4;
+  transition: width 0.3s;
+}
+
+.tp-train-done {
+  margin-top: 10px;
+  font-size: 13px;
+  color: var(--green);
+  font-weight: 500;
+}

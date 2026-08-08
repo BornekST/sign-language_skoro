@@ -1,0 +1,23 @@
+fastapi==0.115.5
+uvicorn[standard]==0.32.1
+websockets==14.1
+sqlalchemy[asyncio]==2.0.36
+asyncpg==0.30.0
+alembic==1.14.0
+pydantic==2.10.3
+pydantic-settings==2.6.1
+python-multipart==0.0.18
+
+# Computer Vision & ML
+opencv-python-headless==4.10.0.84
+mediapipe==0.10.18
+tensorflow-cpu==2.18.0
+numpy==1.26.4
+scikit-learn==1.5.2
+joblib==1.4.2
+
+# Utils
+python-dotenv==1.0.1
+httpx==0.28.0
+Pillow==11.0.0
+base64io==1.0.3
