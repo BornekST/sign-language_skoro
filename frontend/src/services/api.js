@@ -71,8 +71,11 @@ export async function getSampleCounts() {
 }
 
 export async function deleteSamples(sign_name) {
-  const res = await fetch(`${BASE}/api/training/samples/${sign_name}`, { method: 'DELETE', headers: adminHeaders() })
-  if (!res.ok) throw new Error('Failed to delete samples')
+  const res = await fetch(`${BASE}/api/training/samples/${encodeURIComponent(sign_name.trim())}`, { method: 'DELETE', headers: adminHeaders() })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.detail || 'Brisanje nije uspjelo')
+  }
   return res.json()
 }
 

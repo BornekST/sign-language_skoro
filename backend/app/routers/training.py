@@ -20,6 +20,10 @@ _training_state: dict = {"status": "idle", "progress": 0, "total": 0, "accuracy"
 _training_lock = asyncio.Lock()
 
 
+def _canonical_sign_name(value: str) -> str:
+    return " ".join(value.split()).upper()
+
+
 @router.post("/samples")
 async def add_sample(payload: SampleCreate, db: AsyncSession = Depends(get_db)):
     """Store one complete normalized landmark sequence for a named sign."""
@@ -36,18 +40,25 @@ async def add_sample(payload: SampleCreate, db: AsyncSession = Depends(get_db)):
     if any(len(frame) != 126 for frame in features):
         raise HTTPException(status_code=422, detail="every frame must have exactly 126 values")
 
-    # Upsert sign
-    result = await db.execute(select(Sign).where(Sign.name == payload.sign_name))
-    sign = result.scalar_one_or_none()
+    sign_name = _canonical_sign_name(payload.sign_name)
+    if not sign_name:
+        raise HTTPException(status_code=422, detail="sign name must not be empty")
+
+    # Match canonical names as well as legacy rows containing extra whitespace.
+    result = await db.execute(select(Sign))
+    sign = next(
+        (item for item in result.scalars().all() if _canonical_sign_name(item.name) == sign_name),
+        None,
+    )
     if not sign:
-        sign = Sign(name=payload.sign_name)
+        sign = Sign(name=sign_name)
         db.add(sign)
         await db.flush()
 
     sample = TrainingSample(sign_id=sign.id, features=features)
     db.add(sample)
     await db.commit()
-    return {"ok": True, "sign": payload.sign_name}
+    return {"ok": True, "sign": sign_name}
 
 
 @router.get("/samples/count")
@@ -61,7 +72,8 @@ async def sample_counts(db: AsyncSession = Depends(get_db)):
         count_res = await db.execute(
             select(TrainingSample).where(TrainingSample.sign_id == sign_id)
         )
-        counts[name] = sum(
+        canonical_name = _canonical_sign_name(name)
+        counts[canonical_name] = counts.get(canonical_name, 0) + sum(
             1 for sample in count_res.scalars().all()
             if sample.features and isinstance(sample.features[0], list)
         )
@@ -70,14 +82,20 @@ async def sample_counts(db: AsyncSession = Depends(get_db)):
 
 @router.delete("/samples/{sign_name}")
 async def delete_samples(sign_name: str, db: AsyncSession = Depends(get_db)):
-    result = await db.execute(select(Sign).where(Sign.name == sign_name))
-    sign = result.scalar_one_or_none()
-    if not sign:
+    canonical_name = _canonical_sign_name(sign_name)
+    result = await db.execute(select(Sign))
+    signs = [
+        sign for sign in result.scalars().all()
+        if _canonical_sign_name(sign.name) == canonical_name
+    ]
+    if not signs:
         raise HTTPException(status_code=404, detail="Sign not found")
-    await db.execute(delete(TrainingSample).where(TrainingSample.sign_id == sign.id))
-    await db.delete(sign)
+    sign_ids = [sign.id for sign in signs]
+    await db.execute(delete(TrainingSample).where(TrainingSample.sign_id.in_(sign_ids)))
+    for sign in signs:
+        await db.delete(sign)
     await db.commit()
-    return {"ok": True, "deleted_sign": sign_name}
+    return {"ok": True, "deleted_sign": canonical_name}
 
 
 @router.post("/train")
@@ -102,7 +120,8 @@ async def start_training(payload: TrainingRequest, request: Request, db: AsyncSe
             if value and isinstance(value[0], list) and len(value) >= settings.sequence_min_frames:
                 valid.append(value)
         if valid:
-            sequences[sign.name] = valid
+            canonical_name = _canonical_sign_name(sign.name)
+            sequences.setdefault(canonical_name, []).extend(valid)
 
     if len(sequences) < 2:
         raise HTTPException(status_code=422, detail="Potrebne su sekvence za najmanje 2 različita znaka")

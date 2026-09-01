@@ -124,9 +124,13 @@ export default function TrainingPage() {
   }
 
   const handleDeleteSamples = async (name) => {
-    await deleteSamples(name)
-    refreshCounts()
-    setStatusMsg(`Obrisani uzorci za "${name}"`)
+    try {
+      await deleteSamples(name)
+      await refreshCounts()
+      setStatusMsg(`Obrisan znak "${name}" i sve njegove izvedbe.`)
+    } catch (error) {
+      setStatusMsg(`Brisanje znaka "${name}" nije uspjelo: ${error.message}`)
+    }
   }
 
   const handleTrain = async () => {
