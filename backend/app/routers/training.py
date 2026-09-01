@@ -7,6 +7,7 @@ from app.models.sign import Sign, TrainingSample
 from app.schemas.sign import SampleCreate, TrainingRequest
 from app.config import get_settings
 from app.auth import require_admin
+from app.constants import SYSTEM_DELETE_ACTION
 
 import asyncio
 import json
@@ -77,12 +78,15 @@ async def sample_counts(db: AsyncSession = Depends(get_db)):
             1 for sample in count_res.scalars().all()
             if sample.features and isinstance(sample.features[0], list)
         )
+    counts.setdefault(SYSTEM_DELETE_ACTION, 0)
     return counts
 
 
 @router.delete("/samples/{sign_name}")
 async def delete_samples(sign_name: str, db: AsyncSession = Depends(get_db)):
     canonical_name = _canonical_sign_name(sign_name)
+    if canonical_name == SYSTEM_DELETE_ACTION:
+        raise HTTPException(status_code=409, detail="Sistemska radnja BRISANJE ne može se obrisati")
     result = await db.execute(select(Sign))
     signs = [
         sign for sign in result.scalars().all()

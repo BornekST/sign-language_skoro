@@ -6,6 +6,7 @@ from app.database import get_db
 from app.models.sign import Sign, TrainingSample
 from app.schemas.sign import SignCreate, SignResponse
 from app.auth import require_admin
+from app.constants import SYSTEM_DELETE_ACTION
 
 router = APIRouter(prefix="/signs", tags=["signs"])
 
@@ -53,5 +54,7 @@ async def delete_sign(sign_id: int, db: AsyncSession = Depends(get_db), _admin: 
     sign = result.scalar_one_or_none()
     if not sign:
         raise HTTPException(status_code=404, detail="Sign not found")
+    if " ".join(sign.name.split()).upper() == SYSTEM_DELETE_ACTION:
+        raise HTTPException(status_code=409, detail="Sistemska radnja BRISANJE ne može se obrisati")
     await db.delete(sign)
     await db.commit()

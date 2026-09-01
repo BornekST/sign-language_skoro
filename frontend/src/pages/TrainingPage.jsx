@@ -6,6 +6,7 @@ import './TrainingPage.css'
 
 const CAPTURE_FPS = 10
 const SAMPLES_PER_SESSION = 30
+const DELETE_ACTION = 'BRISANJE'
 
 export default function TrainingPage() {
   const [signName, setSignName] = useState('')
@@ -145,6 +146,7 @@ export default function TrainingPage() {
 
   const totalSamples = Object.values(sampleCounts).reduce((a, b) => a + b, 0)
   const uniqueSigns = Object.keys(sampleCounts).length
+  const trainedSigns = Object.values(sampleCounts).filter(count => count > 0).length
 
   return (
     <div className="training-page">
@@ -168,6 +170,13 @@ export default function TrainingPage() {
         <div className="card">
           <h3>Dodaj uzorke</h3>
           <p className="tp-hint">Unesite riječ, kliknite Snimi i izvedite cijeli znak od početka do kraja. Ponovite više puta za bolju preciznost.</p>
+          <button
+            className="btn-ghost tp-system-action"
+            onClick={() => setSignName(DELETE_ACTION)}
+            disabled={capturing}
+          >
+            ⌫ Snimi radnju brisanja
+          </button>
           <div className="tp-row">
             <input
               className="tp-input"
@@ -199,7 +208,10 @@ export default function TrainingPage() {
               <div key={name} className="tp-count-row">
                 <span className="tp-sign-name">{name}</span>
                 <span className="tp-sign-count">{count}</span>
-                <button className="btn-ghost tp-del" onClick={() => handleDeleteSamples(name)} title="Obriši uzorke">✕</button>
+                {name === DELETE_ACTION
+                  ? <span className="tp-system-lock" title="Sistemska radnja ne može se obrisati">🔒</span>
+                  : <button className="btn-ghost tp-del" onClick={() => handleDeleteSamples(name)} title="Obriši uzorke">✕</button>
+                }
               </div>
             ))}
           </div>
@@ -213,7 +225,7 @@ export default function TrainingPage() {
             <button
               className="btn-primary"
               onClick={handleTrain}
-              disabled={training.status === 'running' || uniqueSigns < 2}
+              disabled={training.status === 'running' || trainedSigns < 2}
             >
               {training.status === 'running' ? 'Izrada…' : '🧠 Izgradi DTW bazu'}
             </button>

@@ -31,7 +31,7 @@ export default function Home() {
   const wordGapTimerRef  = useRef(null)
   const prevTextRef      = useRef('')
 
-  const { text, setText } = useTextBuilder(result.sign, result.confidence)
+  const { text, clearText, deleteCharacter } = useTextBuilder(result.sign, result.confidence)
 
   useEffect(() => {
     // Reset subtitle when text is cleared/deleted
@@ -184,8 +184,8 @@ export default function Home() {
           />
           <TextBuilder
             text={text}
-            onClear={() => setText('')}
-            onDelete={() => setText((t) => t.slice(0, -1))}
+            onClear={clearText}
+            onDelete={deleteCharacter}
           />
         </div>
       )}
@@ -194,8 +194,8 @@ export default function Home() {
         <div className="subtitle-controls card">
           <TextBuilder
             text={text}
-            onClear={() => setText('')}
-            onDelete={() => setText((t) => t.slice(0, -1))}
+            onClear={clearText}
+            onDelete={deleteCharacter}
           />
         </div>
       )}

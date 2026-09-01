@@ -62,6 +62,11 @@
 
 .tp-input:focus { border-color: var(--accent); }
 
+.tp-system-action {
+  margin: 10px 0;
+  width: 100%;
+}
+
 .tp-input-sm {
   flex: none;
   width: 80px;
@@ -117,6 +122,12 @@
 
 .tp-del {
   padding: 2px 8px;
+  font-size: 12px;
+}
+
+.tp-system-lock {
+  width: 30px;
+  text-align: center;
   font-size: 12px;
 }
 

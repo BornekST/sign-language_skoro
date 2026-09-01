@@ -5,12 +5,14 @@ import './TextBuilder.css'
 const HOLD_FRAMES     = 8   // uzastopnih frameova za prihvaćanje znaka (~0.6s)
 const COOLDOWN_FRAMES = 30  // frameova pauze prije ponovnog prihvaćanja istog znaka
 const MIN_CONFIDENCE  = 0.78
+const DELETE_ACTION   = 'BRISANJE'
 
 export function useTextBuilder(sign, confidence) {
   const [text, setText] = useState('')
   // count > 0 → broji prema HOLD_FRAMES
   // count < 0 → cooldown (negativan odbrojava prema 0)
   const holdRef = useRef({ sign: null, count: 0 })
+  const historyRef = useRef([])
 
   useEffect(() => {
     if (!sign || confidence < MIN_CONFIDENCE) {
@@ -35,17 +37,32 @@ export function useTextBuilder(sign, confidence) {
     holdRef.current.count += 1
 
     if (holdRef.current.count === HOLD_FRAMES) {
-      const isWord = sign.length > 1  // višeslovni znak = cijela riječ (BOK, HVALA…)
-      setText(prev => {
-        const spaceBefore = isWord && prev.length > 0 && !prev.endsWith(' ') ? ' ' : ''
-        const spaceAfter  = isWord ? ' ' : ''
-        return prev + spaceBefore + sign + spaceAfter
-      })
+      if (sign === DELETE_ACTION) {
+        setText(prev => historyRef.current.pop() ?? prev)
+      } else {
+        const isWord = sign.length > 1
+        setText(prev => {
+          historyRef.current.push(prev)
+          const spaceBefore = isWord && prev.length > 0 && !prev.endsWith(' ') ? ' ' : ''
+          const spaceAfter  = isWord ? ' ' : ''
+          return prev + spaceBefore + sign + spaceAfter
+        })
+      }
       holdRef.current.count = -COOLDOWN_FRAMES
     }
   }, [sign, confidence])
 
-  return { text, setText }
+  const clearText = () => {
+    historyRef.current = []
+    setText('')
+  }
+
+  const deleteCharacter = () => {
+    historyRef.current = []
+    setText(value => value.slice(0, -1))
+  }
+
+  return { text, clearText, deleteCharacter }
 }
 
 export default function TextBuilder({ text, onClear, onDelete }) {
