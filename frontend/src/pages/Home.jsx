@@ -22,7 +22,6 @@ export default function Home() {
   const pendingRef = useRef(false)
   const sentAtRef = useRef(null)
   const sessionRef = useRef(null)
-  const [expectedText, setExpectedText] = useState('')
   const [reportMessage, setReportMessage] = useState('')
 
   // Real-time subtitle state
@@ -136,7 +135,6 @@ export default function Home() {
       const report = buildSessionReport({
         ...session,
         endedAt: new Date().toISOString(),
-        expectedText,
         recognizedText: text,
       })
       downloadSessionReport(report)
@@ -156,14 +154,6 @@ export default function Home() {
           subtitleVisible={subtitleMode && subtitleVisible}
         />
         <div className="home-controls">
-          <input
-            className="report-expected-input"
-            placeholder="Očekivani tekst (opcionalno)"
-            value={expectedText}
-            onChange={(event) => setExpectedText(event.target.value.toUpperCase())}
-            disabled={isActive}
-            title="Omogućuje izračun stvarne preciznosti riječi"
-          />
           <button
             className={isActive ? 'btn-danger' : 'btn-primary'}
             onClick={toggleActive}

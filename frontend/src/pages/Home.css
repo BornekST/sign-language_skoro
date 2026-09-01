@@ -60,20 +60,6 @@
 .ws-ok  { color: var(--green); }
 .ws-off { color: var(--text-dim); }
 
-.report-expected-input {
-  min-width: 220px;
-  flex: 1 1 240px;
-  padding: 10px 12px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  color: var(--text);
-  background: var(--surface);
-}
-
-.report-expected-input:disabled {
-  opacity: 0.65;
-}
-
 .report-message {
   margin-top: -8px;
   color: var(--text-dim);

@@ -21,26 +21,6 @@ function words(value) {
   return value.trim().toUpperCase().split(/\s+/).filter(Boolean)
 }
 
-function editDistance(expected, recognized) {
-  const rows = Array.from({ length: expected.length + 1 }, (_, i) => {
-    const row = new Array(recognized.length + 1).fill(0)
-    row[0] = i
-    return row
-  })
-  for (let j = 0; j <= recognized.length; j += 1) rows[0][j] = j
-  for (let i = 1; i <= expected.length; i += 1) {
-    for (let j = 1; j <= recognized.length; j += 1) {
-      const substitution = expected[i - 1] === recognized[j - 1] ? 0 : 1
-      rows[i][j] = Math.min(
-        rows[i - 1][j] + 1,
-        rows[i][j - 1] + 1,
-        rows[i - 1][j - 1] + substitution,
-      )
-    }
-  }
-  return rows[expected.length][recognized.length]
-}
-
 function predictionRuns(frames) {
   const runs = []
   let current = null
@@ -65,8 +45,7 @@ function predictionRuns(frames) {
   }))
 }
 
-export function buildSessionReport({ startedAt, endedAt, frames, expectedText, recognizedText }) {
-  const expectedWords = words(expectedText)
+export function buildSessionReport({ startedAt, endedAt, frames, recognizedText }) {
   const recognizedWords = words(recognizedText)
   const recognizedFrames = frames.filter((frame) => frame.sign)
   const confidenceValues = recognizedFrames.map((frame) => frame.confidence * 100)
@@ -86,11 +65,6 @@ export function buildSessionReport({ startedAt, endedAt, frames, expectedText, r
     previousSign = frame.sign
   }
 
-  const distance = expectedWords.length ? editDistance(expectedWords, recognizedWords) : null
-  const accuracy = expectedWords.length
-    ? Math.max(0, 1 - distance / expectedWords.length) * 100
-    : null
-
   return {
     report_version: 1,
     session: {
@@ -102,15 +76,8 @@ export function buildSessionReport({ startedAt, endedAt, frames, expectedText, r
       frames_with_prediction: recognizedFrames.length,
     },
     recognition: {
-      expected_text: expectedText.trim() || null,
       recognized_text: recognizedText.trim(),
-      expected_words: expectedWords,
       recognized_words: recognizedWords,
-      word_edit_distance: distance,
-      word_accuracy_percent: round(accuracy),
-      accuracy_note: expectedWords.length
-        ? 'Izračunato iz udaljenosti uređivanja između očekivanih i prepoznatih riječi.'
-        : 'Nije izračunato jer očekivani tekst nije unesen.',
       prediction_runs: predictionRuns(frames),
     },
     confidence_percent: stats(confidenceValues),
