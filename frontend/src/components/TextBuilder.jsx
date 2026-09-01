@@ -6,6 +6,7 @@ const HOLD_FRAMES     = 8   // uzastopnih frameova za prihvaćanje znaka (~0.6s)
 const COOLDOWN_FRAMES = 30  // frameova pauze prije ponovnog prihvaćanja istog znaka
 const MIN_CONFIDENCE  = 0.78
 const DELETE_ACTION   = 'BRISANJE'
+const DELETE_CONFIDENCE = 0.60
 
 export function useTextBuilder(sign, confidence) {
   const [text, setText] = useState('')
@@ -15,14 +16,17 @@ export function useTextBuilder(sign, confidence) {
   const historyRef = useRef([])
 
   useEffect(() => {
-    if (!sign || confidence < MIN_CONFIDENCE) {
+    const normalizedSign = sign?.trim().toUpperCase()
+    const requiredConfidence = normalizedSign === DELETE_ACTION ? DELETE_CONFIDENCE : MIN_CONFIDENCE
+
+    if (!normalizedSign || confidence < requiredConfidence) {
       holdRef.current = { sign: null, count: 0 }
       return
     }
 
-    if (sign !== holdRef.current.sign) {
+    if (normalizedSign !== holdRef.current.sign) {
       // Novi znak → resetiraj brojač
-      holdRef.current = { sign, count: 1 }
+      holdRef.current = { sign: normalizedSign, count: 1 }
       return
     }
 
@@ -37,15 +41,15 @@ export function useTextBuilder(sign, confidence) {
     holdRef.current.count += 1
 
     if (holdRef.current.count === HOLD_FRAMES) {
-      if (sign === DELETE_ACTION) {
+      if (normalizedSign === DELETE_ACTION) {
         setText(prev => historyRef.current.pop() ?? prev)
       } else {
-        const isWord = sign.length > 1
+        const isWord = normalizedSign.length > 1
         setText(prev => {
           historyRef.current.push(prev)
           const spaceBefore = isWord && prev.length > 0 && !prev.endsWith(' ') ? ' ' : ''
           const spaceAfter  = isWord ? ' ' : ''
-          return prev + spaceBefore + sign + spaceAfter
+          return prev + spaceBefore + normalizedSign + spaceAfter
         })
       }
       holdRef.current.count = -COOLDOWN_FRAMES
