@@ -3,6 +3,8 @@ from fastapi.concurrency import run_in_threadpool
 import json
 import time
 
+from app.prediction_stabilizer import PredictionStabilizer
+
 router = APIRouter(tags=["recognition"])
 
 
@@ -17,6 +19,7 @@ async def recognition_websocket(websocket: WebSocket):
     await websocket.accept()
     recognizer = websocket.app.state.recognizer
     recognizer.reset_sequence()
+    stabilizer = PredictionStabilizer()
 
     try:
         while True:
@@ -29,6 +32,7 @@ async def recognition_websocket(websocket: WebSocket):
 
             started = time.perf_counter()
             result = await run_in_threadpool(recognizer.predict_from_frame, frame_b64)
+            result["text_action"] = stabilizer.process(result.get("sign"), float(result.get("confidence", 0)))
             result["processing_ms"] = round((time.perf_counter() - started) * 1000, 2)
             await websocket.send_json(result)
 

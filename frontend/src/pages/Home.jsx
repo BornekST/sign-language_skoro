@@ -10,7 +10,7 @@ import './Home.css'
 const SUBTITLE_CHARS   = 60   // max chars u titlu
 const WORD_GAP_MS      = 1200 // pauza između slova → automatski razmak (nova riječ)
 const SUBTITLE_TIMEOUT = 3500 // ms tišine → titl nestaje
-const CAMERA_FPS = 14
+const CAMERA_FPS = 18
 
 export default function Home() {
   const [isActive, setIsActive] = useState(false)
@@ -31,7 +31,7 @@ export default function Home() {
   const wordGapTimerRef  = useRef(null)
   const prevTextRef      = useRef('')
 
-  const { text, clearText, deleteCharacter } = useTextBuilder(result.sign, result.confidence)
+  const { text, clearText, deleteCharacter } = useTextBuilder(result.text_action)
 
   useEffect(() => {
     // Reset subtitle when text is cleared/deleted

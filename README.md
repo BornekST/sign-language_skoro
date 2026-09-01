@@ -110,7 +110,7 @@ Frontend je dostupan na http://localhost:5173
 1. Kliknite **▶ Pokreni prepoznavanje**
 2. Postavite ruku ispred kamere
 3. Sustav detektira ruku i prikazuje prepoznati znak s postotkom sigurnosti
-4. Znakovi koji se drže ≥ 15 uzastopnih okvira automatski se dodaju u tekstualni izlaz
+4. Backend nakon 2 stabilna obrađena okvira šalje akciju za dodavanje, korekciju ili brisanje teksta
 5. Kliknite **🔊 Govori** za glasovno reproduciranje prepoznatog teksta (Web Speech API)
 
 > **Napomena:** Prepoznavanje radi tek nakon što je model treniran (vidi dolje).

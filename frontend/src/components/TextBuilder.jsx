@@ -2,59 +2,35 @@ import { useState, useEffect, useRef } from 'react'
 import { synthesizeSpeech } from '../services/api.js'
 import './TextBuilder.css'
 
-const HOLD_FRAMES     = 8   // uzastopnih frameova za prihvaćanje znaka (~0.6s)
-const COOLDOWN_FRAMES = 30  // frameova pauze prije ponovnog prihvaćanja istog znaka
-const MIN_CONFIDENCE  = 0.78
-const DELETE_ACTION   = 'BRISANJE'
-const DELETE_CONFIDENCE = 0.60
-
-export function useTextBuilder(sign, confidence) {
+export function useTextBuilder(action) {
   const [text, setText] = useState('')
-  // count > 0 → broji prema HOLD_FRAMES
-  // count < 0 → cooldown (negativan odbrojava prema 0)
-  const holdRef = useRef({ sign: null, count: 0 })
   const historyRef = useRef([])
 
+  const appendSign = (previous, value) => {
+    const isWord = value.length > 1
+    const spaceBefore = isWord && previous.length > 0 && !previous.endsWith(' ') ? ' ' : ''
+    const spaceAfter = isWord ? ' ' : ''
+    return previous + spaceBefore + value + spaceAfter
+  }
+
   useEffect(() => {
-    const normalizedSign = sign?.trim().toUpperCase()
-    const requiredConfidence = normalizedSign === DELETE_ACTION ? DELETE_CONFIDENCE : MIN_CONFIDENCE
+    if (!action) return
 
-    if (!normalizedSign || confidence < requiredConfidence) {
-      holdRef.current = { sign: null, count: 0 }
-      return
+    if (action.type === 'delete') {
+      setText(current => historyRef.current.pop() ?? current)
+    } else if (action.type === 'replace' && action.value) {
+      setText(() => {
+        const beforePrevious = historyRef.current.pop() ?? ''
+        historyRef.current.push(beforePrevious)
+        return appendSign(beforePrevious, action.value)
+      })
+    } else if (action.type === 'add' && action.value) {
+      setText(current => {
+        historyRef.current.push(current)
+        return appendSign(current, action.value)
+      })
     }
-
-    if (normalizedSign !== holdRef.current.sign) {
-      // Novi znak → resetiraj brojač
-      holdRef.current = { sign: normalizedSign, count: 1 }
-      return
-    }
-
-    const { count } = holdRef.current
-
-    if (count < 0) {
-      // Cooldown faza: inkrementira prema 0
-      holdRef.current.count += 1
-      return
-    }
-
-    holdRef.current.count += 1
-
-    if (holdRef.current.count === HOLD_FRAMES) {
-      if (normalizedSign === DELETE_ACTION) {
-        setText(prev => historyRef.current.pop() ?? prev)
-      } else {
-        const isWord = normalizedSign.length > 1
-        setText(prev => {
-          historyRef.current.push(prev)
-          const spaceBefore = isWord && prev.length > 0 && !prev.endsWith(' ') ? ' ' : ''
-          const spaceAfter  = isWord ? ' ' : ''
-          return prev + spaceBefore + normalizedSign + spaceAfter
-        })
-      }
-      holdRef.current.count = -COOLDOWN_FRAMES
-    }
-  }, [sign, confidence])
+  }, [action])
 
   const clearText = () => {
     historyRef.current = []
