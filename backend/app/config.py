@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     sequence_max_frames: int = 40
     dtw_acceptance_distance: float = 0.35
     cors_origins: list[str] = ["http://localhost:3000", "http://localhost:5173"]
+    admin_username: str = "admin"
+    admin_password: str = "change-me"
+    auth_secret: str = "change-me"
+    auth_token_hours: int = 12
 
     class Config:
         env_file = ".env"

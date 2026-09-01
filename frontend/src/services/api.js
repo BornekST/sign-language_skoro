@@ -1,4 +1,37 @@
 const BASE = import.meta.env.VITE_API_URL || ''
+const TOKEN_KEY = 'znakovni_admin_token'
+
+export const getAdminToken = () => localStorage.getItem(TOKEN_KEY)
+export const clearAdminToken = () => localStorage.removeItem(TOKEN_KEY)
+
+function adminHeaders(json = false) {
+  const token = getAdminToken()
+  return {
+    ...(json ? { 'Content-Type': 'application/json' } : {}),
+    ...(token ? { Authorization: `Bearer ${token}` } : {}),
+  }
+}
+
+export async function loginAdmin(username, password) {
+  const res = await fetch(`${BASE}/api/auth/login`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ username, password }),
+  })
+  if (!res.ok) {
+    const data = await res.json().catch(() => ({}))
+    throw new Error(data.detail || 'Prijava nije uspjela')
+  }
+  const data = await res.json()
+  localStorage.setItem(TOKEN_KEY, data.access_token)
+  return data
+}
+
+export async function getCurrentAdmin() {
+  const res = await fetch(`${BASE}/api/auth/me`, { headers: adminHeaders() })
+  if (!res.ok) throw new Error('Administrator nije prijavljen')
+  return res.json()
+}
 
 export async function fetchSigns() {
   const res = await fetch(`${BASE}/api/signs/`)
@@ -9,7 +42,7 @@ export async function fetchSigns() {
 export async function createSign(name, description = '') {
   const res = await fetch(`${BASE}/api/signs/`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: adminHeaders(true),
     body: JSON.stringify({ name, description }),
   })
   if (!res.ok) throw new Error('Failed to create sign')
@@ -17,14 +50,14 @@ export async function createSign(name, description = '') {
 }
 
 export async function deleteSign(id) {
-  const res = await fetch(`${BASE}/api/signs/${id}`, { method: 'DELETE' })
+  const res = await fetch(`${BASE}/api/signs/${id}`, { method: 'DELETE', headers: adminHeaders() })
   if (!res.ok) throw new Error('Failed to delete sign')
 }
 
 export async function addTrainingSample(sign_name, features) {
   const res = await fetch(`${BASE}/api/training/samples`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: adminHeaders(true),
     body: JSON.stringify({ sign_name, features }),
   })
   if (!res.ok) throw new Error('Failed to add sample')
@@ -32,13 +65,13 @@ export async function addTrainingSample(sign_name, features) {
 }
 
 export async function getSampleCounts() {
-  const res = await fetch(`${BASE}/api/training/samples/count`)
+  const res = await fetch(`${BASE}/api/training/samples/count`, { headers: adminHeaders() })
   if (!res.ok) throw new Error('Failed to get sample counts')
   return res.json()
 }
 
 export async function deleteSamples(sign_name) {
-  const res = await fetch(`${BASE}/api/training/samples/${sign_name}`, { method: 'DELETE' })
+  const res = await fetch(`${BASE}/api/training/samples/${sign_name}`, { method: 'DELETE', headers: adminHeaders() })
   if (!res.ok) throw new Error('Failed to delete samples')
   return res.json()
 }
@@ -46,7 +79,7 @@ export async function deleteSamples(sign_name) {
 export async function startTraining() {
   const res = await fetch(`${BASE}/api/training/train`, {
     method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
+    headers: adminHeaders(true),
     body: JSON.stringify({}),
   })
   if (!res.ok) {
@@ -57,7 +90,7 @@ export async function startTraining() {
 }
 
 export async function getTrainingStatus() {
-  const res = await fetch(`${BASE}/api/training/train/status`)
+  const res = await fetch(`${BASE}/api/training/train/status`, { headers: adminHeaders() })
   if (!res.ok) throw new Error('Failed to get training status')
   return res.json()
 }

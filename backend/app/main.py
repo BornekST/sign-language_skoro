@@ -5,7 +5,7 @@ import os
 
 from app.config import get_settings
 from app.database import init_db
-from app.routers import recognition, signs, training, tts
+from app.routers import auth, recognition, signs, training, tts
 from app.ml.sign_recognizer import SignRecognizer
 
 settings = get_settings()
@@ -42,6 +42,7 @@ app.add_middleware(
 )
 
 app.include_router(recognition.router, prefix="/api")
+app.include_router(auth.router, prefix="/api")
 app.include_router(signs.router, prefix="/api")
 app.include_router(training.router, prefix="/api")
 app.include_router(tts.router, prefix="/api")

@@ -5,6 +5,7 @@ from sqlalchemy import select, func
 from app.database import get_db
 from app.models.sign import Sign, TrainingSample
 from app.schemas.sign import SignCreate, SignResponse
+from app.auth import require_admin
 
 router = APIRouter(prefix="/signs", tags=["signs"])
 
@@ -33,7 +34,7 @@ async def list_signs(db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/", response_model=SignResponse, status_code=201)
-async def create_sign(payload: SignCreate, db: AsyncSession = Depends(get_db)):
+async def create_sign(payload: SignCreate, db: AsyncSession = Depends(get_db), _admin: str = Depends(require_admin)):
     existing = await db.execute(select(Sign).where(Sign.name == payload.name))
     if existing.scalar():
         raise HTTPException(status_code=409, detail="Sign already exists")
@@ -47,7 +48,7 @@ async def create_sign(payload: SignCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.delete("/{sign_id}", status_code=204)
-async def delete_sign(sign_id: int, db: AsyncSession = Depends(get_db)):
+async def delete_sign(sign_id: int, db: AsyncSession = Depends(get_db), _admin: str = Depends(require_admin)):
     result = await db.execute(select(Sign).where(Sign.id == sign_id))
     sign = result.scalar_one_or_none()
     if not sign:

@@ -52,3 +52,41 @@ nav {
   width: 100%;
   padding: 24px;
 }
+
+.login-wrap {
+  min-height: calc(100vh - 108px);
+  display: grid;
+  place-items: center;
+}
+
+.login-card {
+  width: min(100%, 420px);
+  display: grid;
+  gap: 18px;
+}
+
+.login-hint { color: var(--text-dim); }
+
+.login-card label {
+  display: grid;
+  gap: 6px;
+  color: var(--text-dim);
+}
+
+.login-card input {
+  width: 100%;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 10px 12px;
+  background: var(--surface2);
+  color: var(--text);
+  font: inherit;
+}
+
+.login-card input:focus {
+  outline: 2px solid var(--accent);
+  border-color: transparent;
+}
+
+.login-error { color: var(--red); }
+.login-actions { display: flex; justify-content: flex-end; gap: 8px; }

@@ -1,17 +1,18 @@
 from fastapi import APIRouter, Depends, HTTPException, Request
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import delete, select
 
 from app.database import get_db
 from app.models.sign import Sign, TrainingSample
 from app.schemas.sign import SampleCreate, TrainingRequest
 from app.config import get_settings
+from app.auth import require_admin
 
 import asyncio
 import json
 import os
 
-router = APIRouter(prefix="/training", tags=["training"])
+router = APIRouter(prefix="/training", tags=["training"], dependencies=[Depends(require_admin)])
 settings = get_settings()
 
 # In-memory training state (single-process usage)
@@ -73,11 +74,10 @@ async def delete_samples(sign_name: str, db: AsyncSession = Depends(get_db)):
     sign = result.scalar_one_or_none()
     if not sign:
         raise HTTPException(status_code=404, detail="Sign not found")
-    samples = await db.execute(select(TrainingSample).where(TrainingSample.sign_id == sign.id))
-    for s in samples.scalars().all():
-        await db.delete(s)
+    await db.execute(delete(TrainingSample).where(TrainingSample.sign_id == sign.id))
+    await db.delete(sign)
     await db.commit()
-    return {"ok": True}
+    return {"ok": True, "deleted_sign": sign_name}
 
 
 @router.post("/train")
