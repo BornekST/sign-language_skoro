@@ -128,7 +128,9 @@ export default function TrainingPage() {
     try {
       await deleteSamples(name)
       await refreshCounts()
-      setStatusMsg(`Obrisan znak "${name}" i sve njegove izvedbe.`)
+      setStatusMsg(name === DELETE_ACTION
+        ? 'Obrisane su izvedbe sistemske radnje "BRISANJE". Radnja ostaje dostupna.'
+        : `Obrisan znak "${name}" i sve njegove izvedbe.`)
     } catch (error) {
       setStatusMsg(`Brisanje znaka "${name}" nije uspjelo: ${error.message}`)
     }
@@ -208,10 +210,13 @@ export default function TrainingPage() {
               <div key={name} className="tp-count-row">
                 <span className="tp-sign-name">{name}</span>
                 <span className="tp-sign-count">{count}</span>
-                {name === DELETE_ACTION
-                  ? <span className="tp-system-lock" title="Sistemska radnja ne može se obrisati">🔒</span>
-                  : <button className="btn-ghost tp-del" onClick={() => handleDeleteSamples(name)} title="Obriši uzorke">✕</button>
-                }
+                {name === DELETE_ACTION && <span className="tp-system-lock" title="Sistemska radnja ostaje u sustavu">🔒</span>}
+                <button
+                  className="btn-ghost tp-del"
+                  onClick={() => handleDeleteSamples(name)}
+                  disabled={name === DELETE_ACTION && count === 0}
+                  title={name === DELETE_ACTION ? 'Obriši izvedbe; radnja ostaje u sustavu' : 'Obriši znak i izvedbe'}
+                >✕</button>
               </div>
             ))}
           </div>

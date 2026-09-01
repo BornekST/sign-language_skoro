@@ -85,21 +85,26 @@ async def sample_counts(db: AsyncSession = Depends(get_db)):
 @router.delete("/samples/{sign_name}")
 async def delete_samples(sign_name: str, db: AsyncSession = Depends(get_db)):
     canonical_name = _canonical_sign_name(sign_name)
-    if canonical_name == SYSTEM_DELETE_ACTION:
-        raise HTTPException(status_code=409, detail="Sistemska radnja BRISANJE ne može se obrisati")
     result = await db.execute(select(Sign))
     signs = [
         sign for sign in result.scalars().all()
         if _canonical_sign_name(sign.name) == canonical_name
     ]
     if not signs:
+        if canonical_name == SYSTEM_DELETE_ACTION:
+            return {"ok": True, "deleted_sign": None, "deleted_samples_for": canonical_name}
         raise HTTPException(status_code=404, detail="Sign not found")
     sign_ids = [sign.id for sign in signs]
     await db.execute(delete(TrainingSample).where(TrainingSample.sign_id.in_(sign_ids)))
-    for sign in signs:
-        await db.delete(sign)
+    if canonical_name != SYSTEM_DELETE_ACTION:
+        for sign in signs:
+            await db.delete(sign)
     await db.commit()
-    return {"ok": True, "deleted_sign": canonical_name}
+    return {
+        "ok": True,
+        "deleted_sign": canonical_name if canonical_name != SYSTEM_DELETE_ACTION else None,
+        "deleted_samples_for": canonical_name,
+    }
 
 
 @router.post("/train")
