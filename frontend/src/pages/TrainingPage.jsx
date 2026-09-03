@@ -232,7 +232,7 @@ export default function TrainingPage() {
               onClick={handleTrain}
               disabled={training.status === 'running' || trainedSigns < 2}
             >
-              {training.status === 'running' ? 'Izrada…' : '🧠 Izgradi DTW bazu'}
+              {training.status === 'running' ? 'Treniranje…' : '🧠 Treniraj model'}
             </button>
           </div>
 

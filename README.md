@@ -129,7 +129,7 @@ Aplikacija podržava treniranje vlastitih znakova bez izmjene koda.
 
 #### Korak 2 – Treniranje
 
-1. Kliknite **🧠 Izgradi DTW bazu**
+1. Kliknite **🧠 Treniraj model**
 2. Referentne sekvence automatski se učitavaju i prepoznavanje je odmah aktivno
 
 Pri prepoznavanju izvedite znak i kratko maknite ruke iz kadra prije sljedeće riječi. Nestanak ruku označava granicu između dviju sekvenci.
@@ -253,7 +253,7 @@ Interaktivna dokumentacija: http://localhost:8000/docs
 
 **Model nije učitan:**
 - Idite na stranicu Treniranje i prikupite uzorke za najmanje 2 znaka
-- Kliknite **Izgradi DTW bazu** i pričekajte završetak
+- Kliknite **Treniraj model** i pričekajte završetak
 
 **Sporo prepoznavanje:**
 - Smanjite broj referentnih izvedbi ili vrijednost `SEQUENCE_MAX_FRAMES`
